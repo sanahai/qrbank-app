@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react'; // Suspense 추가
+import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
@@ -18,16 +18,16 @@ const BANK_LIST = ['KB국민', '신한', '우리', '하나', 'NH농협', 'IBK기
 
 const getToday = () => new Date().toISOString().split('T')[0];
 
-// ★ [핵심] 기존 로직을 별도 컴포넌트(AdminContent)로 분리
+// -------------------------------------------------------------------------
+// [1] 실제 로직이 들어가는 컴포넌트 (AdminContent)
+// -------------------------------------------------------------------------
 function AdminContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const activeTab = searchParams.get('view') || 'overview';
   const setActiveTab = (tabName: string) => router.push(`/admin?view=${tabName}`);
 
-  // ==================================================================================
-  // [1] 가맹점 (Merchant) 관리 로직
-  // ==================================================================================
+  // --- 가맹점 데이터 ---
   const [merchants, setMerchants] = useState([
     { 
       id: '2512003', name: '강남 네일샵', category: '서비스',
@@ -54,7 +54,7 @@ function AdminContent() {
   const [merchantSearchTerm, setMerchantSearchTerm] = useState('');
   const [isMerchantModalOpen, setIsMerchantModalOpen] = useState(false);
   const [editingMerchantId, setEditingMerchantId] = useState<string | null>(null);
-  const initialMerchantForm = { name: '', category: '요식업', bank: 'KB국민', accountOwner: '', accountNumber: '', contact: '', address: '' };
+  const initialMerchantForm = { name: '', category: '요식업', bank: 'KB국민', accountOwner: '', accountNumber: '', contact: '', address: '', status: '심사중' };
   const [merchantFormData, setMerchantFormData] = useState(initialMerchantForm);
   const filteredMerchants = merchants.filter(m => m.name.includes(merchantSearchTerm) || m.id.includes(merchantSearchTerm));
 
@@ -79,16 +79,14 @@ function AdminContent() {
       const mm = String(now.getMonth() + 1).padStart(2, '0');
       const count = merchants.filter(m => m.id.startsWith(yy + mm)).length + 1; 
       const newId = `${yy}${mm}${String(count).padStart(3, '0')}`;
-      setMerchants([{ id: newId, ...merchantFormData, date: getToday(), status: '심사중', stats: { today: 0, week: 0, month: 0, total: 0 } }, ...merchants]);
+      setMerchants([{ id: newId, ...merchantFormData, date: getToday(), stats: { today: 0, week: 0, month: 0, total: 0 } }, ...merchants]);
       alert('등록되었습니다.');
     }
     setIsMerchantModalOpen(false);
   };
   const deleteMerchant = (id: string) => confirm('삭제하시겠습니까?') && setMerchants(merchants.filter(m => m.id !== id));
 
-  // ==================================================================================
-  // [2] 광고주 (Advertiser) 관리 로직
-  // ==================================================================================
+  // --- 광고주 데이터 ---
   const [advertisers, setAdvertisers] = useState([
     { 
       id: '25003', company: '배달의민족', category: '서비스', name: '박홍보', phone: '010-5555-7777', totalSpent: 0, status: 'Paused', date: '2025-12-03',
@@ -134,9 +132,7 @@ function AdminContent() {
   };
   const deleteAdvertiser = (id: string) => confirm('삭제하시겠습니까?') && setAdvertisers(advertisers.filter(ad => ad.id !== id));
 
-  // ==================================================================================
-  // [3] 배너 (Banner) 관리 로직
-  // ==================================================================================
+  // --- 배너 데이터 ---
   const [banners, setBanners] = useState([
     { id: 2, text: '옆집 카페 10% 할인 쿠폰 받기', subText: '당일 영수증 지참 시', url: 'https://starbucks.co.kr', type: 'Ad', active: true, date: '2025-12-05' },
     { id: 1, text: '송금 후 사장님께 화면 보여주면 음료수 1캔 무료!', subText: '테이블당 1회 한정', url: '', type: 'Event', active: true, date: '2025-12-01' },
@@ -174,7 +170,6 @@ function AdminContent() {
       setBanners(banners.filter(b => b.id !== id));
     }
   };
-
 
   return (
     <div className="max-w-7xl mx-auto relative pb-20">
@@ -423,7 +418,7 @@ function AdminContent() {
         </div>
       )}
 
-      {/* 모달 등 (생략하지 않고 포함) */}
+      {/* 모달은 기존과 동일하게 모든 정보를 수정할 수 있도록 유지 */}
       {isMerchantModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
@@ -505,11 +500,13 @@ function AdminContent() {
   );
 }
 
-// ★ 이 부분을 파일 맨 끝에 꼭 넣어주세요! (Suspense Wrapper)
-function AdminContent() {
-  // 위에서 작성한 AdminDashboard 함수 내부의 로직을 그대로 사용하면 됩니다.
-  // 하지만 현재 코드 구조상 AdminDashboard가 default export이므로,
-  // 실제 배포 시에는 'useSearchParams' 에러 방지를 위해 아래와 같이 감싸는 것이 정석입니다.
-  // (이번 코드에서는 편의상 AdminDashboard 내부에 로직을 두었으나, 빌드 에러가 난다면 이 패턴을 써야 합니다)
-  return null; 
+// -------------------------------------------------------------------------
+// [2] Suspense Wrapper Component (Default Export)
+// -------------------------------------------------------------------------
+export default function AdminDashboard() {
+  return (
+    <Suspense fallback={<div className="p-10 text-center text-gray-500">Loading Dashboard...</div>}>
+      <AdminContent />
+    </Suspense>
+  );
 }
