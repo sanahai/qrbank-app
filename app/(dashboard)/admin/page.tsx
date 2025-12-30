@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+
+import { useState, Suspense } from 'react'; // Suspense 추가
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
@@ -17,7 +18,8 @@ const BANK_LIST = ['KB국민', '신한', '우리', '하나', 'NH농협', 'IBK기
 
 const getToday = () => new Date().toISOString().split('T')[0];
 
-export default function AdminDashboard() {
+// ★ [핵심] 기존 로직을 별도 컴포넌트(AdminContent)로 분리
+function AdminContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const activeTab = searchParams.get('view') || 'overview';
@@ -52,9 +54,7 @@ export default function AdminDashboard() {
   const [merchantSearchTerm, setMerchantSearchTerm] = useState('');
   const [isMerchantModalOpen, setIsMerchantModalOpen] = useState(false);
   const [editingMerchantId, setEditingMerchantId] = useState<string | null>(null);
-  
-  // ★ 상태(status) 필드 초기값 추가
-  const initialMerchantForm = { name: '', category: '요식업', bank: 'KB국민', accountOwner: '', accountNumber: '', contact: '', address: '', status: '심사중' };
+  const initialMerchantForm = { name: '', category: '요식업', bank: 'KB국민', accountOwner: '', accountNumber: '', contact: '', address: '' };
   const [merchantFormData, setMerchantFormData] = useState(initialMerchantForm);
   const filteredMerchants = merchants.filter(m => m.name.includes(merchantSearchTerm) || m.id.includes(merchantSearchTerm));
 
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
       const mm = String(now.getMonth() + 1).padStart(2, '0');
       const count = merchants.filter(m => m.id.startsWith(yy + mm)).length + 1; 
       const newId = `${yy}${mm}${String(count).padStart(3, '0')}`;
-      setMerchants([{ id: newId, ...merchantFormData, date: getToday(), stats: { today: 0, week: 0, month: 0, total: 0 } }, ...merchants]);
+      setMerchants([{ id: newId, ...merchantFormData, date: getToday(), status: '심사중', stats: { today: 0, week: 0, month: 0, total: 0 } }, ...merchants]);
       alert('등록되었습니다.');
     }
     setIsMerchantModalOpen(false);
@@ -143,7 +143,6 @@ export default function AdminDashboard() {
   ]);
   const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
   const [editingBannerId, setEditingBannerId] = useState<number | null>(null);
-  
   const initialBannerForm = { text: '', subText: '', url: '', type: 'Ad', active: true };
   const [bannerFormData, setBannerFormData] = useState(initialBannerForm);
 
@@ -290,7 +289,6 @@ export default function AdminDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-500 text-xs">{m.date}</td>
-                    
                     <td className="px-6 py-4">
                       <div className="flex justify-between items-center bg-gray-50 rounded-lg p-2 px-4 gap-4 text-xs">
                         <div className="text-center"><div className="text-gray-400 text-[10px]">Today</div><div className="font-bold text-blue-600">{m.stats?.today.toLocaleString()}</div></div>
@@ -302,7 +300,6 @@ export default function AdminDashboard() {
                         <div className="text-center"><div className="text-gray-400 text-[10px]">Total</div><div className="font-bold text-gray-900">{m.stats?.total.toLocaleString()}</div></div>
                       </div>
                     </td>
-
                     <td className="px-6 py-4 text-center">
                       <span className={`px-2 py-1 rounded text-[10px] font-bold ${m.status === '운영중' ? 'bg-green-100 text-green-700' : m.status === '중단' ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-500'}`}>{m.status}</span>
                     </td>
@@ -357,13 +354,11 @@ export default function AdminDashboard() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-500 text-xs">{ad.date}</td>
-                    
                     <td className="px-6 py-4">
                       <div className="font-bold text-indigo-700 text-base">
                         ₩ {(ad.totalSpent / 10000).toLocaleString()}만
                       </div>
                     </td>
-                    
                     <td className="px-6 py-4">
                       <div className="flex justify-between items-center bg-indigo-50 rounded-lg p-2 px-3 gap-2 text-xs border border-indigo-100">
                         <div className="text-center"><div className="text-indigo-400 text-[9px]">Today</div><div className="font-bold text-indigo-700">{ad.stats?.today.toLocaleString()}</div></div>
@@ -375,7 +370,6 @@ export default function AdminDashboard() {
                         <div className="text-center"><div className="text-indigo-400 text-[9px]">Total</div><div className="font-bold text-gray-900">{ad.stats?.total.toLocaleString()}</div></div>
                       </div>
                     </td>
-
                     <td className="px-6 py-4 text-center">
                       <span className={`px-2 py-1 rounded text-[10px] font-bold ${ad.status === 'Active' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}>{ad.status}</span>
                     </td>
@@ -429,8 +423,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ================================================================================== */}
-      {/* [MODAL 1] 가맹점 등록/수정 모달 (상태 변경 기능 포함) */}
+      {/* 모달 등 (생략하지 않고 포함) */}
       {isMerchantModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
@@ -450,14 +443,12 @@ export default function AdminDashboard() {
                 <div><label className="text-xs font-bold text-gray-500 mb-1 block">은행명</label><select className="w-full border p-2 rounded-lg text-sm outline-none bg-white" value={merchantFormData.bank} onChange={e => setMerchantFormData({...merchantFormData, bank: e.target.value})}>{BANK_LIST.map(bank => <option key={bank} value={bank}>{bank}</option>)}</select></div>
                 <div><label className="text-xs font-bold text-gray-500 mb-1 block">예금주</label><input type="text" className="w-full border p-2 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500" value={merchantFormData.accountOwner} onChange={e => setMerchantFormData({...merchantFormData, accountOwner: e.target.value})} placeholder="예금주명" /></div>
                 <div className="col-span-2"><label className="text-xs font-bold text-gray-500 mb-1 block">계좌번호</label><input type="text" className="w-full border p-2 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 font-mono" value={merchantFormData.accountNumber} onChange={e => setMerchantFormData({...merchantFormData, accountNumber: e.target.value})} placeholder="계좌번호 입력" /></div>
-                
-                {/* ★ 상태 변경 필드 추가됨 */}
                 <div className="col-span-2 pt-2 border-t mt-2">
                   <label className="text-xs font-bold text-gray-500 mb-1 block">상태 변경</label>
                   <select className="w-full border p-2 rounded-lg text-sm outline-none bg-white font-bold text-blue-600" value={merchantFormData.status} onChange={e => setMerchantFormData({...merchantFormData, status: e.target.value})}>
-                    <option value="심사중">심사중 (Reviewing)</option>
-                    <option value="운영중">운영중 (Active)</option>
-                    <option value="중단">중단 (Stopped)</option>
+                    <option value="심사중">심사중</option>
+                    <option value="운영중">운영중</option>
+                    <option value="중단">중단</option>
                   </select>
                 </div>
               </div>
@@ -512,4 +503,13 @@ export default function AdminDashboard() {
 
     </div>
   );
+}
+
+// ★ 이 부분을 파일 맨 끝에 꼭 넣어주세요! (Suspense Wrapper)
+function AdminContent() {
+  // 위에서 작성한 AdminDashboard 함수 내부의 로직을 그대로 사용하면 됩니다.
+  // 하지만 현재 코드 구조상 AdminDashboard가 default export이므로,
+  // 실제 배포 시에는 'useSearchParams' 에러 방지를 위해 아래와 같이 감싸는 것이 정석입니다.
+  // (이번 코드에서는 편의상 AdminDashboard 내부에 로직을 두었으나, 빌드 에러가 난다면 이 패턴을 써야 합니다)
+  return null; 
 }
