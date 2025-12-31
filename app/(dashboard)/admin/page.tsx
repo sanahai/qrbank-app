@@ -1,6 +1,9 @@
 'use client';
 
-import { useState, Suspense } from 'react'; // Suspense 추가
+// ★ [빌드 에러 해결 핵심] 이 페이지는 정적 생성을 건너뛰고 항상 동적으로 렌더링합니다.
+export const dynamic = 'force-dynamic';
+
+import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
