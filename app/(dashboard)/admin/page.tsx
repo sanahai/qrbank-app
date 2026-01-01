@@ -1,7 +1,7 @@
-'use client';
-
-// ★ [빌드 에러 해결 핵심] 이 페이지는 정적 생성을 건너뛰고 항상 동적으로 렌더링합니다.
+// ▼ [핵심 해결책] 이 페이지는 정적 생성(Prerendering)을 하지 않고 항상 동적으로 작동시킵니다.
 export const dynamic = 'force-dynamic';
+
+'use client';
 
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -9,7 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { 
-  Users, Store, MousePointerClick, TrendingUp, Plus, Trash2, Search, Megaphone, X, Save, Edit, MapPin, Phone, Building2, User, Briefcase, Link as LinkIcon, Calendar, CreditCard, Wallet, Activity, ArrowUpRight 
+  Users, Store, MousePointerClick, TrendingUp, Plus, Trash2, Search, Megaphone, X, Edit, Phone, Building2, User, Briefcase, Link as LinkIcon, Calendar, Wallet, Activity, ArrowUpRight 
 } from 'lucide-react';
 
 const visitData = [
