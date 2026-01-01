@@ -1,7 +1,11 @@
 // ▼ [핵심 해결책] 이 페이지는 정적 생성(Prerendering)을 하지 않고 항상 동적으로 작동시킵니다.
 export const dynamic = 'force-dynamic';
 
-'use client';
+import AdminClient from './AdminClient';
+
+export default function AdminPage() {
+  return <AdminClient />;
+}
 
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
