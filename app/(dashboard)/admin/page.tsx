@@ -1,6 +1,6 @@
 'use client';
 
-// ★ 이 설정이 있어야 빌드 에러가 나지 않습니다.
+// ▼ [핵심 해결책] 이 페이지는 빌드 시점에 미리 생성하지 않도록 강제 설정합니다.
 export const dynamic = 'force-dynamic';
 
 import { useState, Suspense } from 'react';
@@ -22,7 +22,7 @@ const BANK_LIST = ['KB국민', '신한', '우리', '하나', 'NH농협', 'IBK기
 const getToday = () => new Date().toISOString().split('T')[0];
 
 // -------------------------------------------------------------------------
-// [1] 실제 로직이 들어가는 내부 컴포넌트 (AdminContent)
+// [내부 컴포넌트] 실제 로직이 들어가는 부분 (AdminContent)
 // -------------------------------------------------------------------------
 function AdminContent() {
   const searchParams = useSearchParams();
@@ -503,7 +503,7 @@ function AdminContent() {
 }
 
 // -------------------------------------------------------------------------
-// [3] Suspense Wrapper Component (Default Export)
+// [메인 컴포넌트] Suspense 적용 (default export)
 // -------------------------------------------------------------------------
 export default function AdminDashboard() {
   return (
