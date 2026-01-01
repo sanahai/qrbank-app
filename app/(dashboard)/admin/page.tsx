@@ -1,7 +1,6 @@
 'use client';
 
-// 1. 빌드 에러 해결의 핵심 (정적 생성 방지)
-// 이 설정은 파일의 최상단(use client 바로 아래)에 있어야 합니다.
+// ★ 이 설정이 있어야 빌드 에러가 나지 않습니다.
 export const dynamic = 'force-dynamic';
 
 import { useState, Suspense } from 'react';
@@ -10,7 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
 } from 'recharts';
 import { 
-  Users, Store, MousePointerClick, TrendingUp, Plus, Trash2, Search, Megaphone, X, Edit, Phone, Building2, User, Briefcase, Link as LinkIcon, Calendar, Wallet, Activity, ArrowUpRight 
+  Users, Store, MousePointerClick, TrendingUp, Plus, Trash2, Search, Megaphone, X, Save, Edit, MapPin, Phone, Building2, User, Briefcase, Link as LinkIcon, Calendar, CreditCard, Wallet, Activity, ArrowUpRight 
 } from 'lucide-react';
 
 const visitData = [
@@ -23,7 +22,7 @@ const BANK_LIST = ['KB국민', '신한', '우리', '하나', 'NH농협', 'IBK기
 const getToday = () => new Date().toISOString().split('T')[0];
 
 // -------------------------------------------------------------------------
-// [2] 실제 로직이 들어가는 내부 컴포넌트
+// [1] 실제 로직이 들어가는 내부 컴포넌트 (AdminContent)
 // -------------------------------------------------------------------------
 function AdminContent() {
   const searchParams = useSearchParams();
