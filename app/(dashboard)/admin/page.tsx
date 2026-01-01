@@ -1,11 +1,8 @@
-// ▼ [핵심 해결책] 이 페이지는 정적 생성(Prerendering)을 하지 않고 항상 동적으로 작동시킵니다.
+'use client';
+
+// 1. 빌드 에러 해결의 핵심 (정적 생성 방지)
+// 이 설정은 파일의 최상단(use client 바로 아래)에 있어야 합니다.
 export const dynamic = 'force-dynamic';
-
-import AdminClient from './AdminClient';
-
-export default function AdminPage() {
-  return <AdminClient />;
-}
 
 import { useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -26,7 +23,7 @@ const BANK_LIST = ['KB국민', '신한', '우리', '하나', 'NH농협', 'IBK기
 const getToday = () => new Date().toISOString().split('T')[0];
 
 // -------------------------------------------------------------------------
-// [1] 실제 로직이 들어가는 컴포넌트 (AdminContent)
+// [2] 실제 로직이 들어가는 내부 컴포넌트
 // -------------------------------------------------------------------------
 function AdminContent() {
   const searchParams = useSearchParams();
@@ -86,7 +83,7 @@ function AdminContent() {
       const mm = String(now.getMonth() + 1).padStart(2, '0');
       const count = merchants.filter(m => m.id.startsWith(yy + mm)).length + 1; 
       const newId = `${yy}${mm}${String(count).padStart(3, '0')}`;
-      setMerchants([{ id: newId, ...merchantFormData, date: getToday(), stats: { today: 0, week: 0, month: 0, total: 0 } }, ...merchants]);
+      setMerchants([{ id: newId, ...merchantFormData, date: getToday(), status: '심사중', stats: { today: 0, week: 0, month: 0, total: 0 } }, ...merchants]);
       alert('등록되었습니다.');
     }
     setIsMerchantModalOpen(false);
@@ -507,7 +504,7 @@ function AdminContent() {
 }
 
 // -------------------------------------------------------------------------
-// [2] Suspense Wrapper Component (Default Export)
+// [3] Suspense Wrapper Component (Default Export)
 // -------------------------------------------------------------------------
 export default function AdminDashboard() {
   return (
